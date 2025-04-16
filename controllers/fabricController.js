@@ -5,7 +5,7 @@ const db = require('../models/db');
 
 // ✅ Fabric Configurations
 const ccpPath = path.resolve(
-  '\\\\wsl$\\Ubuntu\\home\\shiraz\\fabric-samples\\test-network\\organizations\\peerOrganizations\\org1.example.com\\connection-org1.json'
+  '/home/ubuntu/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json'
 );
 const walletPath = path.join(__dirname, '../scripts/wallet');
 const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
@@ -37,8 +37,6 @@ const storeDataOnFabric = async (req, res) => {
         id: row.id,
         deploy: row.deploy,
         data: row.data,
-        bytecode: row.bytecode,
-        functions: row.functions,
         walletAddress: row.walletAddress,
         proof_of_reserve: row.proof_of_reserve,
         submitterType: row.submitterType,
@@ -63,8 +61,11 @@ const storeDataOnFabric = async (req, res) => {
 };
 
 // ✅ Fetch All Data from Fabric
+// ✅ Fetch All Data from Fabric
 const getAllDataFromFabric = async (req, res) => {
   try {
+    console.log("📡 Starting to fetch all data from Fabric...");
+
     const wallet = await Wallets.newFileSystemWallet(walletPath);
     const identity = await wallet.get('admin');
     if (!identity) throw new Error('Admin identity missing');
@@ -75,7 +76,7 @@ const getAllDataFromFabric = async (req, res) => {
     const network = await gateway.getNetwork('mychannel');
     const contract = network.getContract('tokenized');
 
-    console.log("📡 Fetching all data...");
+    console.log("📡 Sending query to Fabric to fetch all data...");
     const result = await contract.evaluateTransaction('QueryAllData');
 
     // ✅ Handle empty response gracefully
@@ -86,8 +87,8 @@ const getAllDataFromFabric = async (req, res) => {
     }
 
     const parsedResult = JSON.parse(result.toString());
+    console.log("📡 Data fetched from Fabric:", parsedResult);
     res.json(parsedResult);
-    console.log("📡 Fabric Response:", parsedResult);
 
     await gateway.disconnect();
   } catch (error) {
@@ -95,7 +96,6 @@ const getAllDataFromFabric = async (req, res) => {
     res.status(500).json({ error: "Fetch Failed" });
   }
 };
-
 
 // ✅ Fetch Single Data Entry from Fabric by ID
 const getDataByID = async (req, res) => {

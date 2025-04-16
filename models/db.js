@@ -23,28 +23,42 @@ db.serialize(() => {
       id TEXT PRIMARY KEY,
       deploy TEXT,
       data TEXT,
-      bytecode TEXT,
-      functions TEXT,
       walletAddress TEXT,
       proof_of_reserve TEXT,
-      totalSupply INTEGER,
-      amount INTEGER,
-      submitterType TEXT,  -- 'admin' or 'institution'
-      apiKey TEXT,         -- API Key if submitted by institution
-      apiSecret TEXT       -- API Secret if submitted by institution
+      submitterType TEXT,
+      apiKey TEXT,
+      transactionHash TEXT,
+      "transaction" TEXT,
+      bank TEXT,
+      reference TEXT,
+      date TEXT,
+      account_name TEXT,
+      account_number TEXT,
+      bank_name TEXT,
+      iban_number TEXT,
+      server_id TEXT,
+      server_ip TEXT,
+      swift_code TEXT,
+      validation_process_receiver TEXT,
+      validation_process_codes TEXT,
+      end_transmitting_validation_process TEXT
     )
   `);
 
-  // Create Minting Transactions Table
+
+
   db.run(`
-    CREATE TABLE IF NOT EXISTS minting_transactions (
+    CREATE TABLE IF NOT EXISTS minted_rwas (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       walletAddress TEXT,
-      amount TEXT,
-      transactionHash TEXT UNIQUE,
-      timestamp TEXT
+      rwa_hash TEXT UNIQUE,
+      proof_of_reserve TEXT,
+      minted_amount REAL,
+      last_minted_at TEXT,
+      eth_tx_hash TEXT
     )
   `);
+  
   
   // Create Admin Table
   db.run(`

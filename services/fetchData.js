@@ -11,7 +11,7 @@ function fetchData(id) {
 
     return new Promise((resolve, reject) => {
         db.get(
-            "SELECT walletAddress, proof_of_reserve, amount FROM tokenized_data WHERE id = ?",
+            "SELECT walletAddress, proof_of_reserve FROM tokenized_data WHERE id = ?",
             [id],
             (err, row) => {
                 if (err) {

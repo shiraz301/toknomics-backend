@@ -23,41 +23,73 @@ app.use('/data', dataRoutes);
 app.use('/fabric', fabricRoutes);
 // ✅ API Route to Mint Tokens
 app.post('/mint', async (req, res) => {
-  const { id } = req.body;
-  
-  console.log("📩 Received mint request with ID:", id);
+    const { id } = req.body;
 
-  if (!id) {
-      console.error("⚠️ Error: ID is missing from request.");
-      return res.status(400).json({ error: "ID is required" });
-  }
+    console.log("📩 Received mint request with ID:", id);
 
-  try {
-      console.log(`🔍 Fetching data for ID: ${id}`);
-      const { walletAddress, proof_of_reserve, amount } = await fetchData(id);
-      
-      console.log(`🔗 Initiating Ethereum minting for ${walletAddress} with amount: ${amount}`);
-      const txHash = await sendToEthereum(walletAddress, amount, proof_of_reserve);
+    if (!id) {
+        console.error("⚠️ Error: ID is missing from request.");
+        return res.status(400).json({ error: "ID is required" });
+    }
 
-      console.log(`🎉 Minting successful! Tx Hash: ${txHash}`);
-      res.json({ success: true, txHash });
-  } catch (error) {
-      console.error("❌ Minting process failed:", error.message);
-      res.status(500).json({ error: error.message });
-  }
+    try {
+        const { walletAddress, proof_of_reserve } = await fetchData(id);
+
+        console.log(`🔗 Initiating Ethereum minting using USDT balance in PoR...`);
+
+        const txHash = await sendToEthereum(walletAddress, proof_of_reserve);
+
+        console.log(`🎉 Minting successful! Tx Hash: ${txHash}`);
+        return res.json({ success: true, txHash });
+
+    } catch (error) {
+        // ✅ Handle duplicate mint attempts gracefully
+        if (error.message.includes("already been minted")) {
+            console.warn("⚠️ Duplicate mint attempt detected.");
+            return res.status(200).json({
+                success: false,
+                message: "This PoR has already been minted."
+            });
+        }
+
+        // ❌ For real errors, respond with 500
+        console.error("❌ Minting process failed:", error.message);
+        return res.status(500).json({ error: error.message });
+    }
 });
+
 
 
 app.get('/transactions', (req, res) => {
-    db.all("SELECT * FROM minting_transactions ORDER BY timestamp DESC", [], (err, rows) => {
+    const query = `
+        SELECT 
+            walletAddress,
+            rwa_hash AS rwaHash,
+            minted_amount AS mintedAmount,
+            last_minted_at AS mintedAt,
+            eth_tx_hash AS ethTxHash  -- Add the eth_tx_hash field here
+        FROM minted_rwas
+        ORDER BY last_minted_at DESC
+    `;
+
+    db.all(query, [], (err, rows) => {
         if (err) {
             console.error("❌ Error fetching transactions:", err);
-            res.status(500).json({ error: "Failed to fetch transactions" });
-        } else {
-            res.json(rows);
+            return res.status(500).json({ error: "Failed to fetch transactions" });
         }
+
+        const formatted = rows.map(tx => ({
+            walletAddress: tx.walletAddress,
+            rwaHash: tx.rwaHash,
+            mintedAmount: parseFloat(tx.mintedAmount).toFixed(6),
+            mintedAt: new Date(tx.mintedAt).toISOString(),
+            ethTxHash: tx.ethTxHash || ''  // Add ethTxHash to the response, default to empty string if not available
+        }));
+
+        res.json({ count: formatted.length, transactions: formatted });
     });
 });
+
 
 
 // ✅ Server Listening
