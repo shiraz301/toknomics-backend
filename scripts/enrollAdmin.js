@@ -3,7 +3,7 @@ const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
 const fs = require('fs');
 
-const ccpPath = '\\\\wsl$\\Ubuntu\\home\\shiraz\\fabric-samples\\test-network\\organizations\\peerOrganizations\\org1.example.com\\connection-org1.json';
+const ccpPath = '/home/paystack/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json';
 
 const walletPath = path.join(__dirname, 'wallet');
 
