@@ -5,7 +5,7 @@ const db = require('../models/db');
 
 // ✅ Fabric Configurations
 const ccpPath = path.resolve(
-  '/home/ubuntu/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json'
+  '\\\\wsl$\\Ubuntu\\home\\shiraz\\fabric-samples\\test-network\\organizations\\peerOrganizations\\org1.example.com\\connection-org1.json'
 );
 const walletPath = path.join(__dirname, '../scripts/wallet');
 const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
